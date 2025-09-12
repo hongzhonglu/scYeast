@@ -1,0 +1,8 @@
+{
+    "num_experiments": 20,
+    "train_ratio": 0.8,
+    "val_ratio": 0.1,
+    "test_ratio": 0.1,
+    "original_data_file": "processed_yeast9_pnas_data_ori.csv",
+    "total_samples": 1143
+}

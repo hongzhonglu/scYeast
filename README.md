@@ -1,358 +1,355 @@
-# scYeast: Deep Learning Framework for Yeast Transcriptome and Proteome Analysis
+scYeast: Deep Learning Framework for Yeast Transcriptome and Proteome Analysis
+This project is a deep learning framework designed for the analysis of yeast transcriptome and proteome data. It includes pre-training based on transcriptome data, fine-tuning for downstream tasks (such as pressure response prediction), as well as pre-training and downstream tasks based on proteome data.
 
-本项目是一个用于酵母转录组和蛋白质组数据分析的深度学习框架，包括基于转录组数据的预训练、下游任务微调（如压力响应预测）以及基于蛋白质组数据的预训练和下游任务。
-
-## 项目结构
-
-```
+Project Structure
 scYeast/
-├── model_construction/        # 转录组预训练模型构建
-├── models/                    # 预训练模型文件
-├── pressure_finetune/         # 压力响应微调任务
-├── proteome_pretrain/         # 蛋白质组预训练
-├── proteome_finetune/         # 蛋白质组下游任务微调
-├── fine_tune/                 # 其他微调任务
-├── analysis/                  # 分析脚本
-├── zero_shot/                 # 零样本学习任务
-└── requirements.txt           # Python依赖包
-```
+├── model_construction/        # Transcriptome pre-training model construction
+├── models/                    # Pre-trained model files
+├── pressure_finetune/         # Pressure response fine-tuning tasks
+├── proteome_pretrain/         # Proteome pre-training
+├── proteome_finetune/         # Proteome downstream task fine-tuning
+├── fine_tune/                 # Other fine-tuning tasks
+├── analysis/                  # Analysis scripts
+├── zero_shot/                 # Zero-shot learning tasks
+└── requirements.txt           # Python dependencies
+Important Note: Handling Large Files
+Due to GitHub's single file size limit of 2GB, ultra-large files in this project have been split.
 
-## 重要提示：处理超大文件
+Merging Split Files
+After cloning the repository, you must merge the following split files before running the code:
 
-由于GitHub单文件限制为2GB，项目中的超大文件已经被分割：
+1. Merge Protein Interaction Data (7.4GB)
+Bash
 
-### 合并分割的文件
-
-克隆仓库后，需要合并以下分割文件：
-
-#### 1. 合并蛋白质相互作用数据（7.4GB）
-
-```bash
 cd proteome_finetune/data
 bash merge_pro_interaction.sh
-# 合并完成后可以删除分割文件节省空间
+# You can delete the split files after merging to save space
 # rm pro_interaction.pkl.part_*
-```
+2. Merge Alignment Data (2.4GB)
+Bash
 
-#### 2. 合并对齐数据（2.4GB）
-
-```bash
 cd proteome_pretrain/data
 bash merge_alignment_data.sh
-# 合并完成后可以删除分割文件节省空间
+# You can delete the split files after merging to save space
 # rm alignment_data.txt.part_*
-```
+Note: The merging process requires sufficient disk space (at least 15GB free).
 
-**注意**：合并过程需要足够的磁盘空间（至少15GB）。
+Installation
+1. Create Conda Environment
+Bash
 
-## 环境安装
-
-### 1. 创建Conda环境
-
-```bash
 conda create -n scyeast python=3.9
 conda activate scyeast
-```
+2. Install Dependencies
+Bash
 
-### 2. 安装依赖包
-
-```bash
-# 基于requirements.txt安装（conda list --export格式）
+# Install based on requirements.txt (conda list --export format)
 conda install --file requirements.txt
 
-# 或者使用pip安装主要依赖
+# Or install main dependencies using pip
 pip install torch torchvision torchaudio
 pip install pandas numpy scikit-learn scipy
 pip install matplotlib seaborn
-pip install goatools  # 用于GO富集分析
-```
+pip install goatools  # For GO enrichment analysis
+3. Install Git LFS (For Large File Management)
+If you need to clone the full model and data files:
 
-### 3. 安装Git LFS（用于大文件管理）
+Bash
 
-如果需要克隆完整的模型和数据文件：
-
-```bash
-# 安装Git LFS
+# Install Git LFS
 git lfs install
 
-# 克隆仓库（会自动下载LFS文件）
+# Clone the repository (LFS files will be downloaded automatically)
 git clone https://github.com/hongzhonglu/scYeast.git
 cd scYeast
-```
+Pre-trained Models
+The project utilizes the following pre-trained models:
 
-## 预训练模型
+models/final_checkpoint_spearman0.5_w_knowledge_huber_v4.pth - Transcriptome pre-trained model with knowledge graph integration.
 
-项目使用以下预训练模型：
+models/final_checkpoint_spearman0.5_wo_knowledge_huber_v4.pth - Transcriptome pre-trained model without knowledge graph integration.
 
-- `models/final_checkpoint_spearman0.5_w_knowledge_huber_v4.pth` - 包含知识图谱的转录组预训练模型
-- `models/final_checkpoint_spearman0.5_wo_knowledge_huber_v4.pth` - 不包含知识图谱的转录组预训练模型
+Usage Guide
+1. Pressure Response Prediction (Pressure Fine-tuning)
+The pressure response prediction task is used to predict the phenotypic response of yeast under different stress conditions.
 
-## 使用指南
+Environment Preparation
+Bash
 
-### 1. 压力响应预测任务 (Pressure Fine-tuning)
-
-压力响应预测任务用于预测酵母在不同压力条件下的表型响应。
-
-#### 运行环境准备
-
-```bash
 cd pressure_finetune
-```
+Data Files
+alignment_pressure_data_1_with_labels.csv - Pressure response dataset (features and labels)
 
-#### 数据文件
+GSE201387_yeast.tpm.tsv - TPM expression data
 
-- `alignment_pressure_data_1_with_labels.csv` - 压力响应数据集（包含特征和标签）
-- `GSE201387_yeast.tpm.tsv` - TPM表达数据
-- `pressure_DEGs.xlsx` - 差异表达基因
-- `log(tpm+1)d2_pressure_data_1.csv` - 预处理后的表达数据
+pressure_DEGs.xlsx - Differentially Expressed Genes
 
-#### 运行微调训练
+log(tpm+1)d2_pressure_data_1.csv - Pre-processed expression data
 
-##### 使用预训练模型进行微调
+Running Fine-tuning
+Fine-tuning with Pre-trained Model
+Bash
 
-```bash
 python pressure_fine_tune.py
-```
+This script will:
 
-该脚本会：
-- 从`alignment_pressure_data_1_with_labels.csv`加载数据
-- 加载预训练模型 `../models/final_checkpoint_spearman0.5_w_knowledge_huber_v4.pth`
-- 进行10次独立实验以评估模型稳定性
-- 保存每次实验的最佳模型到 `pressure_fine_tune_best_model_run_{i}.pth`
-- 保存预测结果到 `results/` 目录
+Load data from alignment_pressure_data_1_with_labels.csv.
 
-##### 不使用预训练模型（从头训练）
+Load the pre-trained model ../models/final_checkpoint_spearman0.5_w_knowledge_huber_v4.pth.
 
-```bash
+Run 10 independent experiments to evaluate model stability.
+
+Save the best model from each run to pressure_fine_tune_best_model_run_{i}.pth.
+
+Save prediction results to the results/ directory.
+
+Training from Scratch (No Pre-training)
+Bash
+
 python pressure_no_pretrain.py
-```
+Used for comparative experiments to evaluate the effect of pre-training.
 
-该脚本用于对比实验，评估预训练的效果。
+Pre-training without Knowledge Graph
+Bash
 
-##### 不使用知识图谱的预训练模型
-
-```bash
 python pressure_wo_know.py
-```
+Result Analysis
+After training, result files are saved in the results/ directory:
 
-#### 结果分析
+pressure_test_predictions.npy - Test set predicted probabilities
 
-训练完成后，结果文件保存在 `results/` 目录：
-- `pressure_test_predictions.npy` - 测试集预测概率
-- `pressure_test_true_labels.npy` - 测试集真实标签
-- `pressure_fine_tune_best_model_run_*.pth` - 各次实验的最佳模型
+pressure_test_true_labels.npy - Test set true labels
 
-使用ROC曲线可视化结果：
+pressure_fine_tune_best_model_run_*.pth - Best models from each run
 
-```bash
+Visualize results using ROC curves:
+
+Bash
+
 python roc_paint.py
-```
+Other Machine Learning Baselines
+The project provides various ML methods for comparison:
 
-#### 其他机器学习基线模型
+Bash
 
-项目还提供了多种机器学习方法用于对比：
+python svm.py           # Support Vector Machine
+python knn.py           # K-Nearest Neighbors
+python decisiontree.py  # Decision Tree
+python naive_bayes.py   # Naive Bayes
+2. Proteome Pre-training
+Proteome pre-training is based on the transcriptome pre-trained model, further trained using proteome data.
 
-```bash
-python svm.py           # 支持向量机
-python knn.py           # K近邻
-python decisiontree.py  # 决策树
-python naive_bayes.py   # 朴素贝叶斯
-```
+Environment Preparation
+Bash
 
-### 2. 蛋白质组预训练 (Proteome Pre-training)
-
-蛋白质组预训练基于转录组预训练模型，进一步使用蛋白质组数据进行训练。
-
-#### 运行环境准备
-
-```bash
 cd proteome_pretrain
-```
+Data Files
+Data files are located in the data/ directory:
 
-#### 数据文件
+alignment_data.txt - Aligned proteome data (2.4GB, via Git LFS)
 
-数据文件位于 `data/` 目录：
-- `alignment_data.txt` - 对齐的蛋白质组数据 (2.4GB, 使用Git LFS)
-- `scaled_data_1_pro.pkl` - 标准化后的蛋白质数据 (85MB, 使用Git LFS)
-- `gene2vec_dim_200_iter_9spearman0.5.txt` - 基因向量表示
-- `filter_proindex.pkl` - 过滤后的蛋白质索引
-- `final_checkpoint_spearman0.5_w_knowledge_huber_v4.pth` - 转录组预训练模型
+scaled_data_1_pro.pkl - Scaled protein data (85MB, via Git LFS)
 
-#### 运行预训练
+gene2vec_dim_200_iter_9spearman0.5.txt - Gene vector representations
 
-##### 基于转录组预训练模型继续训练
+filter_proindex.pkl - Filtered protein index
 
-```bash
+final_checkpoint_spearman0.5_w_knowledge_huber_v4.pth - Transcriptome pre-trained model
+
+Running Pre-training
+Continue Training Based on Transcriptome Model
+Bash
+
 python "DSgraph_main_v4 _pro_test.py"
-```
+This script will:
 
-该脚本会：
-- 加载转录组预训练模型
-- 使用蛋白质组数据进行继续训练
-- 保存训练好的模型为 `final_checkpoint_spearman0.5_w_knowledge_v4pro.pth`
-- 输出训练日志到 `output_pro.txt`
+Load the transcriptome pre-trained model.
 
-##### 不使用转录组预训练（从头训练）
+Continue training using proteome data.
 
-```bash
+Save the trained model as final_checkpoint_spearman0.5_w_knowledge_v4pro.pth.
+
+Output training logs to output_pro.txt.
+
+Training from Scratch (No Transcriptome Pre-training)
+Bash
+
 python "DSgraph_main_v4 _pro_nopretrain.py"
-```
+Used for comparative experiments to evaluate the transfer learning effect of transcriptome pre-training.
 
-用于对比实验，评估转录组预训练的迁移学习效果。
+Model Architecture
+Proteome pre-training uses the following core modules:
 
-#### 模型架构
+DSgraph_pro.py - Main model architecture
 
-蛋白质组预训练使用以下核心模块：
-- `DSgraph_pro.py` - 主模型架构
-- `embedding_pro.py` - 嵌入层
-- `self_attention_pro.py` - 自注意力机制
-- `gated_fusion.py` - 门控融合层
-- `gene2vec.py` - 基因向量化
-- `load_data.py` - 数据加载工具
+embedding_pro.py - Embedding layer
 
-### 3. 蛋白质组下游任务微调 (Proteome Fine-tuning)
+self_attention_pro.py - Self-attention mechanism
 
-基于蛋白质组预训练模型进行下游任务微调，包括生长速率预测、核糖体占用率(RPF)预测和蛋白质周转率(Turnover)预测。
+gated_fusion.py - Gated fusion layer
 
-#### 运行环境准备
+gene2vec.py - Gene vectorization
 
-```bash
+load_data.py - Data loading utility
+
+3. Proteome Downstream Task Fine-tuning
+Fine-tuning downstream tasks based on the proteome pre-trained model, including Growth Rate prediction, Ribosome Profiling (RPF) prediction, and Protein Turnover prediction.
+
+Environment Preparation
+Bash
+
 cd proteome_finetune
-```
+Data Files
+Data files are located in the data/ directory (via Git LFS):
 
-#### 数据文件
+pro_interaction.pkl - Protein interaction data (7.4GB)
 
-数据文件位于 `data/` 目录（使用Git LFS）：
-- `pro_interaction.pkl` - 蛋白质相互作用数据 (7.4GB)
-- `scaled_data_1_pro.pkl` - 标准化蛋白质数据 (85MB)
-- `growth_tensor.pkl` - 生长数据
-- `pretrained_features_max.pkl` - 预训练特征（最大值）
-- `pretrained_features_min.pkl` - 预训练特征（最小值）
-- 其他pkl文件：基因索引、样本索引、过滤器等
+scaled_data_1_pro.pkl - Scaled protein data (85MB)
 
-#### 运行微调任务
+growth_tensor.pkl - Growth data
 
-##### 生长速率预测
+pretrained_features_max.pkl - Pre-trained features (Max)
 
-```bash
+pretrained_features_min.pkl - Pre-trained features (Min)
+
+Other pkl files: Gene index, Sample index, Filters, etc.
+
+Running Fine-tuning Tasks
+Growth Rate Prediction
+Bash
+
 python growth_finetune.py
-```
+Ribosome Profiling (RPF) Prediction
+Bash
 
-##### 核糖体占用率(RPF)预测
-
-```bash
 python rpf_finetune.py
-```
+Uses K-fold cross-validation. Results saved in rpf_kfold_results/.
 
-该脚本使用K折交叉验证，结果保存在 `rpf_kfold_results/`。
+Protein Turnover Prediction
+Bash
 
-##### 蛋白质周转率预测
-
-```bash
 python turnover_finetune.py
-```
+Uses K-fold cross-validation. Results saved in turnover_kfold_results/.
 
-该脚本使用K折交叉验证，结果保存在 `turnover_kfold_results/`。
+Result Files
+rpf_kfold_results/ - K-fold validation results for RPF
 
-#### 结果文件
+fold_*/model.pkl - Model for each fold
 
-- `rpf_kfold_results/` - RPF预测的K折验证结果
-  - `fold_*/model.pkl` - 各折的模型
-  - `fold_*/predictions.csv` - 各折的预测结果
-  - `round_results.csv` - 汇总结果
+fold_*/predictions.csv - Predictions for each fold
 
-- `turnover_kfold_results/` - Turnover预测的K折验证结果（结构同上）
+round_results.csv - Summary results
 
-- `ml_model_results/` - 机器学习模型结果
-  - `extra_tree_fold_*.pkl` - Extra Trees模型 (169MB, 使用Git LFS)
-  - `fold_*_predictions.csv` - 预测结果
+turnover_kfold_results/ - K-fold validation results for Turnover (same structure)
 
-## 分析工具
+ml_model_results/ - Machine learning model results
 
-项目提供了多种分析脚本（位于 `analysis/` 目录）：
+extra_tree_fold_*.pkl - Extra Trees model (169MB, via Git LFS)
 
-### GO富集分析
+fold_*_predictions.csv - Prediction results
 
-```bash
+Analysis Tools
+Various analysis scripts are provided in the analysis/ directory:
+
+GO Enrichment Analysis
+Bash
+
 cd analysis
-python GO_weighted_enrich.py  # 加权GO富集分析
-python GO_paint.py             # GO富集结果可视化
-```
+python GO_weighted_enrich.py  # Weighted GO enrichment analysis
+python GO_paint.py            # Visualization of GO enrichment results
+Performance Evaluation
+Bash
 
-### 性能评估
+python r2_scatter_paint.py    # R² Scatter Plot
+python loss_compare.py        # Loss function comparison
+Zero-shot Learning
+Located in the zero_shot/ directory:
 
-```bash
-python r2_scatter_paint.py     # R²散点图
-python loss_compare.py         # 损失函数对比
-```
+gene_embedding_analysis.py - Gene embedding analysis
 
-## 零样本学习 (Zero-shot Learning)
+gene_pair_analysis.py - Gene pair analysis
 
-位于 `zero_shot/` 目录，包括：
-- `gene_embedding_analysis.py` - 基因嵌入分析
-- `gene_pair_analysis.py` - 基因对分析
-- `GRN.py` - 基因调控网络分析
+GRN.py - Gene Regulatory Network analysis
 
-## 注意事项
+Notes
+Large File Management
+This project uses Git LFS to manage large files (>50MB):
 
-### 大文件管理
+Model files (*.pth)
 
-本项目使用Git LFS管理大文件（>50MB）：
-- 模型文件 (*.pth)
-- 数据文件 (*.pkl, *.npy)
-- 大型文本文件 (alignment_data.txt)
+Data files (*.pkl, *.npy)
 
-确保已安装Git LFS：
-```bash
+Large text files (alignment_data.txt)
+
+Ensure Git LFS is installed:
+
+Bash
+
 git lfs install
-```
+GPU Requirements
+Most training scripts require GPU support. If you only have a CPU, you can modify the script:
 
-### GPU要求
+Python
 
-大部分训练脚本需要GPU支持。如果只有CPU，可以修改脚本中的：
-```python
-device = 'cuda'  # 改为 'cpu'
-```
+device = 'cuda'  # Change to 'cpu'
+Memory Requirements
+Proteome-related tasks require significant memory. At least 32GB RAM is recommended.
 
-### 内存要求
+File Paths
+All scripts have been updated to use relative paths. Please ensure you run them from their corresponding directories:
 
-蛋白质组相关任务需要较大内存，建议至少32GB RAM。
+Scripts in pressure_finetune/ must be run from that directory.
 
-## 文件路径说明
+Scripts in proteome_pretrain/ must be run from that directory.
 
-所有脚本已经更新为使用相对路径，确保在对应目录下运行：
-- `pressure_finetune/` 下的脚本需要在该目录运行
-- `proteome_pretrain/` 下的脚本需要在该目录运行
-- `proteome_finetune/` 下的脚本需要在该目录运行
+Scripts in proteome_finetune/ must be run from that directory.
 
-## 常见问题
+FAQ
+Q: Module not found error?
+A: Ensure you have activated the conda environment and installed all dependencies:
 
-### Q: 运行时提示找不到模块？
-A: 确保已激活conda环境并安装所有依赖：
-```bash
+Bash
+
 conda activate scyeast
-pip install -r requirements.txt  # 如果有pip格式的requirements
-```
+pip install -r requirements.txt
+Q: Git LFS download is slow?
+A: You can use a proxy or download large files individually from the release page (if available).
 
-### Q: Git LFS下载速度慢？
-A: 可以使用代理或从发布页面单独下载大文件。
+Q: Out of GPU memory (OOM)?
+A: You can reduce the batch_size in the script or run on CPU (though it will be slower).
 
-### Q: 显存不足？
-A: 可以减小batch_size，或使用CPU运行（速度会变慢）。
+Citation
+If you use scYeast in your research, please cite our paper:
 
-## 引用
+[Citation Details to be added] (Paper citation will be added upon publication)
 
-如果使用本项目，请引用我们的论文（待发表）。
+License
+This project is open-sourced under the MIT License.
 
-## 许可证
+Plaintext
 
-[待添加许可证信息]
+MIT License
 
-## 联系方式
+Copyright (c) 2025 Hongzhong Lu (scYeast Team)
 
-如有问题，请提交GitHub Issue或联系项目维护者。
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
----
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-**更新日期**: 2025-11-24
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+Contact
+If you have any questions, please submit a GitHub Issue or contact the project maintainers.
 
+Last Updated: 2025-11-24

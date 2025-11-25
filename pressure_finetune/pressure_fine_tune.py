@@ -67,7 +67,7 @@ class CombinedNet(nn.Module):
 
 
 def read_pressure_fine_tune_data(batch_size):
-    age_dataset = pd.read_csv('/home/lulab/scyeast/tmp7-5/alignment_pressure_data_1_with_labels.csv')
+    age_dataset = pd.read_csv('./alignment_pressure_data_1_with_labels.csv')
     features = age_dataset.iloc[:, :-1]
     labels = age_dataset.iloc[:, -1]
     labels = np.array([ast.literal_eval(item) for item in labels])
@@ -94,7 +94,7 @@ def read_pressure_fine_tune_data(batch_size):
 
 
 if __name__ == '__main__':
-    os.chdir('../tmp7-5')
+    # Set working directory to the script location
     device = 'cuda'
     
     # 存储所有实验的预测结果和真实值
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         net = DSgraphNetWO_Output().to(device).to(torch.float32)
         # net = DSgraphNet_WO_knowlegde().to(device).to(torch.float32)
         modified_state_dict = net.state_dict()
-        checkpoint = torch.load('/home/lulab/scyeast/tmp7-5/final_checkpoint_spearman0.5_w_knowledge_huber_v4.pth')
+        checkpoint = torch.load('../models/final_checkpoint_spearman0.5_w_knowledge_huber_v4.pth')
         checkpoint_state_dict = checkpoint['net']
         for name, param in checkpoint_state_dict.items():
             if name in modified_state_dict:
@@ -215,8 +215,8 @@ if __name__ == '__main__':
 #%%
 # 读取保存的预测结果和真实标签
 import numpy as np
-all_predictions = np.load('../tmp7-5/results/pressure_test_predictions.npy')
-all_true_labels = np.load('../tmp7-5/results/pressure_test_true_labels.npy')
+all_predictions = np.load('./results/pressure_test_predictions.npy')
+all_true_labels = np.load('./results/pressure_test_true_labels.npy')
 
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt

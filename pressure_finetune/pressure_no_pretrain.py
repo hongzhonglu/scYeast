@@ -45,7 +45,7 @@ class AdditionalNetwork(nn.Module):
 
 
 def read_pressure_fine_tune_data(batch_size):
-    age_dataset = pd.read_csv('/home/lulab/scyeast/tmp7-5/alignment_pressure_data_1_with_labels.csv')
+    age_dataset = pd.read_csv('./alignment_pressure_data_1_with_labels.csv')
     features = age_dataset.iloc[:, :-1]
     labels = age_dataset.iloc[:, -1]
     labels = np.array([ast.literal_eval(item) for item in labels])
@@ -72,7 +72,7 @@ def read_pressure_fine_tune_data(batch_size):
 
 
 if __name__ == '__main__':
-    os.chdir('../tmp7-5')
+    # Set working directory to the script location
     device = 'cuda'
     
     # 存储所有实验的预测结果和真实值

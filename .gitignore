@@ -1,0 +1,23 @@
+# 超大文件（已分割上传）
+proteome_finetune/data/pro_interaction.pkl
+proteome_pretrain/data/alignment_data.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
